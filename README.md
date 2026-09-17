@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/logo.png" alt="Trip Scout" width="160" height="160" />
+</p>
+
 # Reagan Trip Scout
 
 Private household travel desk for **Robert & Rhonda Reagan**. This is a personal prototype, not a public product.

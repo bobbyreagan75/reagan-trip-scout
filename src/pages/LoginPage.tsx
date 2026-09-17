@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { BrandMark } from '../components/BrandMark'
 import { APP_NAME, DEMO_PASSPHRASE, HOUSEHOLD, POLICY } from '../data/household'
 import { useApp } from '../context/AppContext'
 import type { TravelerName } from '../types'
@@ -18,6 +19,7 @@ export function LoginPage() {
   return (
     <div className="login-wrap">
       <form className="hero login-card" onSubmit={(e) => void onSubmit(e)}>
+        <BrandMark size={112} className="login-logo" alt="Trip Scout" />
         <div className="kicker">Private household desk</div>
         <h1>{APP_NAME}</h1>
         <p className="lede">

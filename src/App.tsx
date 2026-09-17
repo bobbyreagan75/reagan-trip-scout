@@ -1,3 +1,4 @@
+import { BrandMark } from './components/BrandMark'
 import { Layout } from './components/Layout'
 import { useApp } from './context/AppContext'
 import { BalancesPage } from './pages/BalancesPage'
@@ -14,6 +15,7 @@ export default function App() {
   if (!ready) {
     return (
       <div className="login-wrap">
+        <BrandMark size={72} alt="Trip Scout" />
         <p className="muted">Opening the household desk…</p>
       </div>
     )

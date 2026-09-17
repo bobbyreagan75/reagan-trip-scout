@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { APP_NAME, HOUSEHOLD } from '../data/household'
 import { useApp } from '../context/AppContext'
 import type { View } from '../types'
+import { BrandMark } from './BrandMark'
 
 const LINKS: { id: View; label: string }[] = [
   { id: 'home', label: 'Desk' },
@@ -20,7 +21,7 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <header className="topbar">
         <button className="brand" onClick={() => setView('home')}>
-          <span className="mark">R</span>
+          <BrandMark size={44} alt="" />
           <span>
             {APP_NAME}
             <small>{HOUSEHOLD}</small>
