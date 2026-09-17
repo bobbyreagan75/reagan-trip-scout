@@ -79,7 +79,7 @@ export function cairoDemoTrip(): TripDraft {
       property: 'Grand Hyatt Cairo (SAMPLE)',
       isHyatt: true,
       rareNonHyatt: false,
-      nights: 5,
+      nights: 4,
       category: 'Cat 2-ish / edit me',
       pointsPerNight: 12000,
       cashPerNight: 280,
