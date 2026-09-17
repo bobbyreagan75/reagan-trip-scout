@@ -1,0 +1,65 @@
+{
+  "app_working_title": "Reagan Trip Scout",
+  "travelers": ["Robert Reagan", "Rhonda Reagan"],
+  "philosophy": {
+    "deal_first": true,
+    "destination_secondary": true,
+    "luxury_priority": true,
+    "domestic_us_cash_only": true,
+    "points_for_international_luxury": true
+  },
+  "airports": {
+    "domestic_home": "ORF",
+    "international_position": "IAD",
+    "also_ok_gateways": ["JFK", "EWR", "BOS", "ATL", "ORD", "MIA"]
+  },
+  "trip_defaults": {
+    "party_size": 2,
+    "typical_length_days": [10, 14],
+    "avoid_us_summer": true,
+    "cabin_goal": "business_or_first",
+    "dislike_early_departures": true,
+    "late_flights_ok": true,
+    "lodging": "hyatt_about_98_percent",
+    "hyatt_status": "Globalist",
+    "excursions": "Viator",
+    "cruises": "increasingly_preferred_as_cash_deals_see_more_for_less"
+  },
+  "points_rules": {
+    "min_cpp": 0.02,
+    "luxury_cpp_target": [0.10, 0.25],
+    "points_only_for": ["flights", "hotels"],
+    "never_redeem_via": ["gift_cards", "statement_credits", "amazon", "cruises_with_flexible_points", "car_rentals", "card_travel_portals"],
+    "transfer_minimum_ratio": "1:1",
+    "mock_book_before_transfer": true,
+    "prefer_spend_order_when_both_transfer": ["Amex MR", "then keep Bilt for Hyatt/partners Amex lacks"],
+    "cash_flight_ceilings_per_hour_one_way": {
+      "coach": 30,
+      "premium_economy": 60,
+      "business_first": 90,
+      "note": "double for round trip; hours = direct flight time"
+    },
+    "emergency_stash_per_traveler": 50000
+  },
+  "cards_and_earning": {
+    "flexible": ["Amex MR", "Bilt", "Chase UR", "Capital One", "Citi ThankYou"],
+    "rakuten_payout": "Amex MR",
+    "rove": "just_started",
+    "no_manufactured_spend": true,
+    "natural_spend_plus_good_deals": true
+  },
+  "tools_they_use": ["AwardWallet", "seats.aero", "Google Flights", "Kayak Explore", "Viator", "Rove"],
+  "balances_snapshot_2026_09_14": {
+    "note": "approx; Chase may show duplicate rows in AwardWallet",
+    "Amex_MR_combined": 655577,
+    "Citi_TY": 330323,
+    "Bilt_combined": 264616,
+    "Cap_One": 102304,
+    "Chase_UR_deduped": 101714,
+    "JAL_JMB_Rhonda": 240000,
+    "Hyatt_Rhonda": 50469,
+    "Delta_Robert": 51936,
+    "Aeroplan": 800
+  },
+  "copyright": "Household operating rules only. Do not copy third-party travel ebooks, charts, or coaching brands into this app."
+}
