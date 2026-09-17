@@ -30,21 +30,6 @@ export function VerifyStep({ trip, balances, onChange, onBack, onNext }: Props) 
       <p className="lede">{POLICY.dealGate} {POLICY.never}</p>
       {trip.demoLabel ? <div className="banner sample">{trip.demoLabel}. SAMPLE figures are scored the same way as live pastes.</div> : null}
 
-      <h3 style={{ marginTop: 8 }}>What kind of redemption is this?</h3>
-      <div className="choice-grid">
-        {CHANNELS.map((channel) => (
-          <button
-            key={channel.id}
-            type="button"
-            className={`choice ${trip.redemptionChannel === channel.id ? 'selected' : ''}`}
-            onClick={() => onChange({ redemptionChannel: channel.id })}
-          >
-            <strong>{channel.label}</strong>
-            <div className="hint">{channel.never ? 'Never passes this gate.' : 'The only type this desk will score.'}</div>
-          </button>
-        ))}
-      </div>
-
       <div className={`score-hero ${score.overall.toLowerCase()}`}>
         <div className={`verdict ${score.overall}`}>{score.overall}</div>
         <p className="stamp">{score.overall}</p>
@@ -54,6 +39,21 @@ export function VerifyStep({ trip, balances, onChange, onBack, onNext }: Props) 
       <div className="grid-2">
         {cash ? <LaneCard title="Cash lane" lane={cash} /> : null}
         {points ? <LaneCard title="Points lane" lane={points} /> : null}
+      </div>
+
+      <h3 style={{ marginTop: 16 }}>What kind of redemption is this?</h3>
+      <div className="chip-row">
+        {CHANNELS.map((channel) => (
+          <button
+            key={channel.id}
+            type="button"
+            className={`choice ${trip.redemptionChannel === channel.id ? 'selected' : ''}`}
+            onClick={() => onChange({ redemptionChannel: channel.id })}
+          >
+            <strong>{channel.label}</strong>
+            <div className="hint">{channel.never ? 'Never passes.' : 'Can be scored.'}</div>
+          </button>
+        ))}
       </div>
 
       <p className="hint" style={{ marginTop: 14 }}>

@@ -507,8 +507,17 @@ hr.rule {
   margin: 16px 0;
 }
 
+.chip-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chip-row .choice { padding: 10px 12px; }
+
 @media (max-width: 720px) {
-  .grid-2, .grid-3, .field-row, .who { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .field-row, .who, .chip-row { grid-template-columns: 1fr; }
   .topbar { flex-wrap: wrap; }
   .main { width: min(100% - 20px, 960px); margin-top: 16px; }
   .hero { padding: 22px 18px; }
