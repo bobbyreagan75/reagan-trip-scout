@@ -24,12 +24,14 @@ npm run dev
 
 Then open the URL Vite prints (usually `http://localhost:5173`).
 
+The home desk opens on **This week**: editable transfer bonuses, natural-spend earn tips (including a Freedom Flex 5% category placeholder), and open watchlist alerts. Nothing auto-emails. Program devaluations and tool news stay with Chief of Staff.
+
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Local Vite dev server |
 | `npm run build` | Typecheck + production build |
 | `npm run preview` | Serve the production build |
-| `npm test` | Unit tests for CPP, ceilings, Deal Score, Hyatt stay, watches, JAL, positioning, CSV, briefs |
+| `npm test` | Unit tests for CPP, ceilings, Deal Score, Hyatt stay, watches, JAL, positioning, This week bonuses, CSV, briefs |
 | `npm run lint` | Oxlint |
 
 ### Login
@@ -64,6 +66,12 @@ Also in the top nav:
 
 - **Watch** — award watchlist (route, cabin, max miles, seats, date window). Seed: EgyptAir JFK–CAI business ≤75k for 2 around May 2027. Notify = copy alert + mailto (no live scrape; Chief of Staff chat/email later).
 - **JAL** — Rhonda’s ~240k JMB. Editable SAMPLE transpacific / Asia premium-cabin ideas with CPP. Mock-book first; no speculative transfer; don’t burn on poor value.
+
+**This week** (home, top of the desk):
+
+- Transfer bonuses you type in (program → partner, %, end date). SAMPLE rows are editable. Cash vs points asks **Applies to this trip?** when a bonus looks like a match.
+- Earn this week: Bilt, Amex Gold, Amex Platinum, Chase Sapphire Reserve, Freedom Flex (rotating 5% placeholder), Freedom Unlimited, Ink Business Preferred. Natural spend only; notes persist in this browser.
+- Watchlist hits: open watches with copy/mailto. No auto-email. Devaluations and tool/product news are out of this panel.
 
 Balances live under **Balances** (seeded from `src/data/household-profile.json`, snapshot dated 14 Sep 2026).
 

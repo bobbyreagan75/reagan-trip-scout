@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { COS_EMAIL } from '../../data/household'
+import { useApp } from '../../context/AppContext'
 import { copyText } from '../../lib/format'
 import { buildTripBrief, chiefOfStaffMailto, humanTripBrief } from '../../lib/tripBrief'
 import type { BalanceRow, HyattAwards, TripDraft } from '../../types'
@@ -13,7 +14,11 @@ type Props = {
 }
 
 export function BriefStep({ trip, balances, askedBy, hyattAwards, onBack }: Props) {
-  const brief = useMemo(() => buildTripBrief(trip, balances, askedBy, hyattAwards), [trip, balances, askedBy, hyattAwards])
+  const { bonuses } = useApp()
+  const brief = useMemo(
+    () => buildTripBrief(trip, balances, askedBy, hyattAwards, bonuses),
+    [trip, balances, askedBy, hyattAwards, bonuses],
+  )
   const summary = useMemo(() => humanTripBrief(brief), [brief])
   const json = useMemo(() => JSON.stringify(brief, null, 2), [brief])
   const [toast, setToast] = useState('')

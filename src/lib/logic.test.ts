@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cairoDemoTrip } from '../data/cairoDemo'
+import { EARN_CARDS, SEED_BONUSES } from '../data/alerts'
 import { MOCK_BOOK_ITEMS, seedBalanceRows } from '../data/household'
 import { SEED_JAL_IDEAS } from '../data/jalIdeas'
 import { SEED_WATCHES } from '../data/watches'
@@ -14,6 +15,7 @@ import { jalCoverage, jalIdeaCpp, jalPoorValue } from './jal'
 import { isEarlyDaypart, orfToGatewayUrl, positioningReady } from './positioning'
 import { seatsAeroSearchUrl } from './seatsAero'
 import { recommendedTransfer, transferOptions } from './transfers'
+import { bonusExpired, bonusLikelyApplies, milesWithBonus } from './alerts'
 import { buildTripBrief, humanTripBrief } from './tripBrief'
 import { emptyHyattStay } from './tripDefaults'
 import { watchAlertText, watchSummary } from './watchlist'
@@ -128,6 +130,7 @@ describe('trip brief', () => {
     expect(humanTripBrief(brief)).toContain('Positioning')
     expect(brief.positioning.primary).toBe('IAD')
     expect(brief.positioning.backups.length).toBeGreaterThanOrEqual(2)
+    expect(brief.appliedBonuses).toEqual([])
   })
 })
 
@@ -300,5 +303,32 @@ describe('JAL stash', () => {
     expect(jalIdeaCpp(idea).cpp).toBeGreaterThan(0.02)
     const junk = { ...idea, milesPerPerson: 80000, cashCompUsd: 200, taxesUsd: 50 }
     expect(jalPoorValue(junk)).toBe(true)
+  })
+})
+
+describe('this week alerts', () => {
+  it('matches SAMPLE Amex → Aeroplan to the Cairo award', () => {
+    const amexAeroplan = SEED_BONUSES.find((row) => row.partner === 'Aeroplan')
+    expect(amexAeroplan).toBeTruthy()
+    const award = cairoDemoTrip().awardQuotes[0]
+    expect(bonusLikelyApplies(amexAeroplan!, award.program, 'Amex Membership Rewards')).toBe(true)
+    expect(bonusLikelyApplies(amexAeroplan!, 'World of Hyatt', 'Amex Membership Rewards')).toBe(false)
+    expect(milesWithBonus(176000, 30)).toBe(228800)
+  })
+
+  it('covers household earn cards and a Flex category placeholder', () => {
+    expect(EARN_CARDS.map((card) => card.id)).toEqual([
+      'bilt', 'amex-gold', 'amex-plat', 'csr', 'flex', 'unlimited', 'ink',
+    ])
+    expect(EARN_CARDS.find((card) => card.id === 'flex')?.flexPlaceholder).toBe(true)
+    expect(bonusExpired({ ...SEED_BONUSES[0], endDate: '2020-01-01' })).toBe(true)
+  })
+
+  it('lists applied bonuses on the trip brief', () => {
+    const seed = SEED_BONUSES[0]
+    const trip = { ...cairoDemoTrip(), appliedBonusIds: [seed.id] }
+    const brief = buildTripBrief(trip, seedBalanceRows(), 'Robert Reagan', undefined, SEED_BONUSES)
+    expect(brief.appliedBonuses[0]).toMatch(/Aeroplan/)
+    expect(humanTripBrief(brief)).toContain('Transfer bonuses marked for this trip')
   })
 })

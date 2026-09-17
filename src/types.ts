@@ -148,6 +148,34 @@ export type JalIdea = {
   notes: string
 }
 
+export type TransferBonus = {
+  id: string
+  fromProgram: string
+  partner: string
+  bonusPercent: number
+  endDate: string
+  notes: string
+  sample: boolean
+}
+
+export type EarnCardId =
+  | 'bilt'
+  | 'amex-gold'
+  | 'amex-plat'
+  | 'csr'
+  | 'flex'
+  | 'unlimited'
+  | 'ink'
+
+export type EarnCard = {
+  id: EarnCardId
+  card: string
+  tip: string
+  flexPlaceholder?: boolean
+}
+
+export type EarnNotes = Partial<Record<EarnCardId, { note: string; flexCategories?: string }>>
+
 export type TransferOption = {
   currencyKey: BalanceKey
   currencyName: string
@@ -183,6 +211,7 @@ export type TripDraft = {
   hyattSearch: string
   step: WizardStep
   demoLabel: string | null
+  appliedBonusIds: string[]
 }
 
 export type Settings = {

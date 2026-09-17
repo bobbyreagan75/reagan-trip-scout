@@ -1,5 +1,6 @@
 import { MOCK_BOOK_ITEMS, POLICY } from '../../data/household'
 import { useApp } from '../../context/AppContext'
+import { bonusSummary, bonusesForTrip, milesWithBonus } from '../../lib/alerts'
 import { ceilingForQuote, quoteExceedsCeiling } from '../../lib/ceilings'
 import { laneById, mockBookComplete, scoreDeal } from '../../lib/dealScore'
 import { formatMiles, formatUsd } from '../../lib/format'
@@ -15,7 +16,7 @@ type Props = {
 }
 
 export function PayStep({ trip, balances, onChange, onBack, onNext }: Props) {
-  const { setView } = useApp()
+  const { setView, bonuses } = useApp()
   const score = scoreDeal(trip, balances)
   const cashLane = laneById(score, 'cash')
   const pointsLane = laneById(score, 'points')
@@ -24,6 +25,8 @@ export function PayStep({ trip, balances, onChange, onBack, onNext }: Props) {
   const award = trip.awardQuotes.find((q) => q.id === trip.selectedAwardId) ?? trip.awardQuotes[0]
   const options = award ? transferOptions({ award, balances, partySize: trip.constraints.partySize }) : []
   const rec = recommendedTransfer(options)
+  const chosen = options.find((option) => option.currencyKey === trip.chosenTransferKey) ?? rec
+  const tripBonuses = bonusesForTrip(bonuses, award, chosen)
   const checks = padChecks(trip.mockBookChecks)
   const booked = mockBookComplete(checks)
   const cashAllowed = Boolean(cashLane?.allowed)
@@ -81,6 +84,12 @@ export function PayStep({ trip, balances, onChange, onBack, onNext }: Props) {
       <h2>Use cash or points?</h2>
       <p className="lede">Only lanes that cleared Deal Score are open. {POLICY.amexBeforeBilt}</p>
       <p className={`banner ${score.overall === 'FAIL' ? 'warn' : 'ok'}`}>{score.summary}</p>
+      {tripBonuses.some((row) => row.likely) ? (
+        <p className="banner cash">
+          A transfer bonus on This week looks like a match for this award. If you take points, mark “Applies to this trip?”
+          Extra miles still sit on a 1:1 base — mock-book first.
+        </p>
+      ) : null}
 
       <div className="grid-2">
         {cash ? (
@@ -148,6 +157,52 @@ export function PayStep({ trip, balances, onChange, onBack, onNext }: Props) {
               </button>
             ))}
           </div>
+          {tripBonuses.length > 0 ? (
+            <>
+              <h3 style={{ marginTop: 16 }}>Transfer bonus — applies to this trip?</h3>
+              <p className="hint">
+                Extra miles on a 1:1 base only. A bonus does not skip mock-book. Edit the list on the desk under This week.
+              </p>
+              <div className="table-like">
+                {tripBonuses.map(({ bonus, likely }) => {
+                  const applied = (trip.appliedBonusIds ?? []).includes(bonus.id)
+                  const boosted = award ? milesWithBonus(award.miles * trip.constraints.partySize, bonus.bonusPercent) : 0
+                  return (
+                    <label key={bonus.id} className={`quote ${applied ? 'selected' : ''}`} style={{ display: 'grid', gap: 6 }}>
+                      <span className="row-between">
+                        <strong>{bonusSummary(bonus)}</strong>
+                        {bonus.sample ? <span className="tag">SAMPLE</span> : null}
+                      </span>
+                      <span>
+                        <input
+                          type="checkbox"
+                          checked={applied}
+                          onChange={(e) => {
+                            const current = trip.appliedBonusIds ?? []
+                            const next = e.target.checked
+                              ? [...current, bonus.id]
+                              : current.filter((id) => id !== bonus.id)
+                            onChange({ appliedBonusIds: next })
+                          }}
+                        />
+                        {' '}Applies to this trip
+                      </span>
+                      <span className="hint">
+                        {likely
+                          ? `Likely match for ${award?.program} via ${bonus.fromProgram}.`
+                          : 'Does not look like a match for this award / currency — tick only if you know it applies.'}
+                        {applied && award ? ` Party miles with bonus ≈ ${formatMiles(boosted)}.` : ''}
+                      </span>
+                    </label>
+                  )
+                })}
+              </div>
+            </>
+          ) : (
+            <p className="hint" style={{ marginTop: 12 }}>
+              No transfer bonuses on the desk. Add one under This week if a real 1:1-plus window is live.
+            </p>
+          )}
           <h3 style={{ marginTop: 16 }}>Mock-book before any transfer</h3>
           <p className="hint">{POLICY.mockBook} Transfer stays locked until every box is ticked.</p>
           <div className="checklist">

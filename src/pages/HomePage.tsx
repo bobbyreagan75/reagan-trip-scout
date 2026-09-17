@@ -1,3 +1,4 @@
+import { ThisWeekPanel } from '../components/ThisWeekPanel'
 import { AIRPORTS, POLICY, seedBalanceRows } from '../data/household'
 import { useApp } from '../context/AppContext'
 import { formatMiles } from '../lib/format'
@@ -21,14 +22,16 @@ export function HomePage() {
         </div>
       </section>
 
+      <ThisWeekPanel />
+
       <section className="grid-2" style={{ marginBottom: 16 }}>
-        <button className="card" type="button" style={{ textAlign: 'left' }} onClick={() => setView('watch')}>
-          <h3>Award watches</h3>
-          <p className="hint">EgyptAir JFK–CAI business ≤75k for 2 in May 2027 is seeded. Copy/mailto when it prints.</p>
-        </button>
         <button className="card" type="button" style={{ textAlign: 'left' }} onClick={() => setView('jal')}>
           <h3>JAL {jal ? formatMiles(jal.amount) : '240,000'}</h3>
           <p className="hint">Rhonda’s native pile. Transpacific premium SAMPLE ideas, editable CPP, mock-book first.</p>
+        </button>
+        <button className="card" type="button" style={{ textAlign: 'left' }} onClick={() => setView('watch')}>
+          <h3>Full watchlist</h3>
+          <p className="hint">Add, edit, or delete watches. Notify is copy + mailto — this desk does not auto-email.</p>
         </button>
       </section>
 

@@ -60,6 +60,7 @@ export function emptyTrip(): TripDraft {
     hyattSearch: '',
     step: 'where',
     demoLabel: null,
+    appliedBonusIds: [],
   }
 }
 

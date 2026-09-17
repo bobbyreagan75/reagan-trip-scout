@@ -94,5 +94,6 @@ export function cairoDemoTrip(): TripDraft {
     hyattSearch: 'Cairo, Egypt',
     step: 'verify',
     demoLabel: CAIRO_DEMO_LABEL,
+    appliedBonusIds: [],
   }
 }

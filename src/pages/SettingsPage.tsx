@@ -97,7 +97,7 @@ export function SettingsPage() {
 
       <section className="card" style={{ marginTop: 16 }}>
         <h2>Reset</h2>
-        <p className="hint">Restores seeded balances, watches, JAL ideas, and clears the current trip draft. Does not change the passphrase.</p>
+        <p className="hint">Restores seeded balances, watches, JAL ideas, This week bonuses/earn notes, and clears the current trip draft. Does not change the passphrase.</p>
         <button
           className="btn-ghost"
           type="button"

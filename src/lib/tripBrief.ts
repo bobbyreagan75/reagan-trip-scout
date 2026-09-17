@@ -3,9 +3,10 @@ import { cppForQuotes, formatCpp } from './cpp'
 import { ceilingForQuote } from './ceilings'
 import { scoreDeal } from './dealScore'
 import { scoreHyattStay } from './hyattScore'
+import { bonusSummary } from './alerts'
 import { defaultHyattAwards } from './storage'
 import { recommendedTransfer, transferOptions } from './transfers'
-import type { BalanceRow, DealVerdict, HyattAwards, TripDraft } from '../types'
+import type { BalanceRow, DealVerdict, HyattAwards, TransferBonus, TripDraft } from '../types'
 import { flightOrigin } from './tripDefaults'
 
 export type TripBrief = {
@@ -37,6 +38,7 @@ export type TripBrief = {
   }
   householdRules: string[]
   nextAsks: string[]
+  appliedBonuses: string[]
 }
 
 export function buildTripBrief(
@@ -44,6 +46,7 @@ export function buildTripBrief(
   balances: BalanceRow[],
   askedBy: string,
   hyattAwards: HyattAwards = defaultHyattAwards(),
+  bonuses: TransferBonus[] = [],
 ): TripBrief {
   const origin = flightOrigin(trip.isDomestic)
   const cash = trip.cashQuotes.find((q) => q.id === trip.selectedCashId) ?? trip.cashQuotes[0]
@@ -56,6 +59,9 @@ export function buildTripBrief(
   const deal = scoreDeal(trip, balances)
   const hyattPoints = balances.find((row) => row.key === 'Hyatt_Rhonda')?.amount ?? 0
   const stayScore = scoreHyattStay(trip.hyattStay, hyattAwards, hyattPoints)
+  const appliedBonuses = bonuses
+    .filter((bonus) => (trip.appliedBonusIds ?? []).includes(bonus.id))
+    .map(bonusSummary)
 
   return {
     generatedAt: new Date().toISOString(),
@@ -101,6 +107,7 @@ export function buildTripBrief(
     },
     householdRules: Object.values(POLICY),
     nextAsks: nextAsks(trip),
+    appliedBonuses,
   }
 }
 
@@ -135,6 +142,9 @@ export function humanTripBrief(brief: TripBrief): string {
     brief.transfer
       ? `Transfer path: ${brief.transfer.currencyName} → ${brief.transfer.program} at 1:1 · need ${brief.transfer.milesNeeded.toLocaleString('en-US')} · on-hand ${brief.transfer.balance.toLocaleString('en-US')}`
       : 'Transfer path: none yet',
+    brief.appliedBonuses.length
+      ? `Transfer bonuses marked for this trip: ${brief.appliedBonuses.join('; ')}`
+      : 'Transfer bonuses marked for this trip: none',
     `Lodging: ${brief.lodging.stayScore}. ${brief.lodging.notes || 'No hotel notes yet.'}`,
     brief.domestic
       ? 'Positioning: none — ORF home.'
