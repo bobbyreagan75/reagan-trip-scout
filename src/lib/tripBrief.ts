@@ -2,8 +2,10 @@ import { AIRPORTS, APP_NAME, COS_EMAIL, HOUSEHOLD, POLICY } from '../data/househ
 import { cppForQuotes, formatCpp } from './cpp'
 import { ceilingForQuote } from './ceilings'
 import { scoreDeal } from './dealScore'
+import { scoreHyattStay } from './hyattScore'
+import { defaultHyattAwards } from './storage'
 import { recommendedTransfer, transferOptions } from './transfers'
-import type { BalanceRow, DealVerdict, TripDraft } from '../types'
+import type { BalanceRow, DealVerdict, HyattAwards, TripDraft } from '../types'
 import { flightOrigin } from './tripDefaults'
 
 export type TripBrief = {
@@ -21,7 +23,8 @@ export type TripBrief = {
   payWith: string | null
   cashQuotes: TripDraft['cashQuotes']
   awardQuotes: TripDraft['awardQuotes']
-  lodging: { hyattDefault: true; notes: string; search: string }
+  lodging: { hyattDefault: true; notes: string; search: string; stayScore: string; property: string }
+  positioning: { primary: string; backups: string[]; daypart: string }
   cpp: string | null
   transfer: ReturnType<typeof recommendedTransfer> | null
   cashCeilingUsd: number | null
@@ -36,7 +39,12 @@ export type TripBrief = {
   nextAsks: string[]
 }
 
-export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy: string): TripBrief {
+export function buildTripBrief(
+  trip: TripDraft,
+  balances: BalanceRow[],
+  askedBy: string,
+  hyattAwards: HyattAwards = defaultHyattAwards(),
+): TripBrief {
   const origin = flightOrigin(trip.isDomestic)
   const cash = trip.cashQuotes.find((q) => q.id === trip.selectedCashId) ?? trip.cashQuotes[0]
   const award = trip.awardQuotes.find((q) => q.id === trip.selectedAwardId) ?? trip.awardQuotes[0]
@@ -46,6 +54,8 @@ export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy:
     : undefined
 
   const deal = scoreDeal(trip, balances)
+  const hyattPoints = balances.find((row) => row.key === 'Hyatt_Rhonda')?.amount ?? 0
+  const stayScore = scoreHyattStay(trip.hyattStay, hyattAwards, hyattPoints)
 
   return {
     generatedAt: new Date().toISOString(),
@@ -62,7 +72,18 @@ export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy:
     payWith: trip.payWith,
     cashQuotes: trip.cashQuotes,
     awardQuotes: trip.awardQuotes,
-    lodging: { hyattDefault: true, notes: trip.lodgingNotes, search: trip.hyattSearch || trip.destination },
+    lodging: {
+      hyattDefault: true,
+      notes: trip.lodgingNotes,
+      search: trip.hyattSearch || trip.destination,
+      stayScore: stayScore.headline,
+      property: trip.hyattStay.property,
+    },
+    positioning: {
+      primary: trip.positioning.primary,
+      backups: trip.positioning.backups,
+      daypart: trip.positioning.daypart,
+    },
     cpp: cpp === null ? null : formatCpp(cpp),
     transfer: transfer ?? null,
     cashCeilingUsd: cash ? ceilingForQuote(cash) : null,
@@ -114,7 +135,10 @@ export function humanTripBrief(brief: TripBrief): string {
     brief.transfer
       ? `Transfer path: ${brief.transfer.currencyName} → ${brief.transfer.program} at 1:1 · need ${brief.transfer.milesNeeded.toLocaleString('en-US')} · on-hand ${brief.transfer.balance.toLocaleString('en-US')}`
       : 'Transfer path: none yet',
-    `Lodging: Hyatt Globalist default. ${brief.lodging.notes || 'No hotel notes yet.'}`,
+    `Lodging: ${brief.lodging.stayScore}. ${brief.lodging.notes || 'No hotel notes yet.'}`,
+    brief.domestic
+      ? 'Positioning: none — ORF home.'
+      : `Positioning: ORF → ${brief.positioning.primary} · backups ${brief.positioning.backups.join(', ') || 'none'} · ${brief.positioning.daypart}`,
     '',
     'Please keep hunting with these household rules in mind, then reply with options:',
     ...brief.nextAsks.map((ask) => `  • ${ask}`),
@@ -144,7 +168,10 @@ function nextAsks(trip: TripDraft): string[] {
   } else {
     asks.unshift('Run Deal Score before cash vs points. Prefer Amex Membership Rewards before Bilt when both transfer.')
   }
-  asks.push('Keep lodging on Hyatt Globalist unless there is a rare reason not to.')
+  asks.push('Keep lodging on Hyatt Globalist unless there is a rare reason not to. Score the stay vs 2¢.')
+  if (!trip.isDomestic && trip.positioning.backups.length < 2) {
+    asks.push('Add 2–3 ORF→gateway backup positioning options (JFK/EWR/BOS/ATL…).')
+  }
   if (trip.cashQuotes.some((q) => q.sample) || trip.awardQuotes.some((q) => q.sample)) {
     asks.push('Replace SAMPLE placeholder fares with live pasted numbers from Google Flights / seats.aero.')
   }

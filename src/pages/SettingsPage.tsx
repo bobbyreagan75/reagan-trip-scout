@@ -67,8 +67,37 @@ export function SettingsPage() {
       </section>
 
       <section className="card" style={{ marginTop: 16 }}>
+        <h2>Hyatt certificates</h2>
+        <p className="hint">Counted in Stay scoring. Default is zero until you type what AwardWallet actually shows.</p>
+        <div className="field-row">
+          <label className="field">
+            Free-night certificates
+            <input
+              type="number"
+              min={0}
+              value={settings.hyattAwards.freeNightCerts}
+              onChange={(e) => updateSettings({
+                hyattAwards: { ...settings.hyattAwards, freeNightCerts: Number(e.target.value) || 0 },
+              })}
+            />
+          </label>
+          <label className="field">
+            Club awards
+            <input
+              type="number"
+              min={0}
+              value={settings.hyattAwards.clubAwards}
+              onChange={(e) => updateSettings({
+                hyattAwards: { ...settings.hyattAwards, clubAwards: Number(e.target.value) || 0 },
+              })}
+            />
+          </label>
+        </div>
+      </section>
+
+      <section className="card" style={{ marginTop: 16 }}>
         <h2>Reset</h2>
-        <p className="hint">Restores seeded balances and clears the current trip draft. Does not change the passphrase.</p>
+        <p className="hint">Restores seeded balances, watches, JAL ideas, and clears the current trip draft. Does not change the passphrase.</p>
         <button
           className="btn-ghost"
           type="button"

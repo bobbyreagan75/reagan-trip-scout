@@ -1,5 +1,31 @@
 import { AIRPORTS, DEFAULT_PARTY, DEFAULT_TRIP_LENGTH } from '../data/household'
-import type { TripDraft } from '../types'
+import type { HyattStay, TripDraft, TripPositioning } from '../types'
+
+export function emptyPositioning(): TripPositioning {
+  return {
+    primary: AIRPORTS.internationalPosition,
+    backups: [],
+    daypart: 'evening',
+  }
+}
+
+export function emptyHyattStay(): HyattStay {
+  return {
+    property: '',
+    isHyatt: true,
+    rareNonHyatt: false,
+    nights: 4,
+    category: '',
+    pointsPerNight: 0,
+    cashPerNight: 0,
+    taxesPerNight: 0,
+    freeNightCertsUsed: 0,
+    clubAwardsUsed: 0,
+    suiteUpgradeNote: true,
+    clubAccess: true,
+    lateCheckout: true,
+  }
+}
 
 export function emptyTrip(): TripDraft {
   return {
@@ -28,6 +54,8 @@ export function emptyTrip(): TripDraft {
     chosenTransferKey: null,
     redemptionChannel: null,
     mockBookChecks: [],
+    positioning: emptyPositioning(),
+    hyattStay: emptyHyattStay(),
     lodgingNotes: '',
     hyattSearch: '',
     step: 'where',

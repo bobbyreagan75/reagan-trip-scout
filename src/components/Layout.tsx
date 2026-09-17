@@ -6,6 +6,8 @@ import type { View } from '../types'
 const LINKS: { id: View; label: string }[] = [
   { id: 'home', label: 'Desk' },
   { id: 'plan', label: 'Plan' },
+  { id: 'watch', label: 'Watch' },
+  { id: 'jal', label: 'JAL' },
   { id: 'balances', label: 'Balances' },
   { id: 'settings', label: 'Settings' },
 ]

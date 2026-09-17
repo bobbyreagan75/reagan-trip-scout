@@ -7,6 +7,7 @@ export function HomePage() {
   const first = session?.traveler.split(' ')[0]
   const rows = balances.length ? balances : seedBalanceRows()
   const amex = rows.find((r) => r.key === 'Amex_MR_combined')
+  const jal = rows.find((r) => r.key === 'JAL_JMB_Rhonda')
 
   return (
     <>
@@ -18,6 +19,17 @@ export function HomePage() {
           <button className="btn" onClick={newTrip}>Start a trip</button>
           <button className="btn-gold" onClick={loadCairoDemo}>Load Cairo SAMPLE demo</button>
         </div>
+      </section>
+
+      <section className="grid-2" style={{ marginBottom: 16 }}>
+        <button className="card" type="button" style={{ textAlign: 'left' }} onClick={() => setView('watch')}>
+          <h3>Award watches</h3>
+          <p className="hint">EgyptAir JFK–CAI business ≤75k for 2 in May 2027 is seeded. Copy/mailto when it prints.</p>
+        </button>
+        <button className="card" type="button" style={{ textAlign: 'left' }} onClick={() => setView('jal')}>
+          <h3>JAL {jal ? formatMiles(jal.amount) : '240,000'}</h3>
+          <p className="hint">Rhonda’s native pile. Transpacific premium SAMPLE ideas, editable CPP, mock-book first.</p>
+        </button>
       </section>
 
       <section className="card" style={{ marginBottom: 16 }}>

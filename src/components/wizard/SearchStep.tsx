@@ -14,6 +14,7 @@ type Props = {
   onChange: (patch: Partial<TripDraft>) => void
   onBack: () => void
   onNext: () => void
+  onSaveWatch?: () => void
 }
 
 const EMPTY_CASH: Omit<CashQuote, 'id'> = {
@@ -44,7 +45,7 @@ const EMPTY_AWARD: Omit<AwardQuote, 'id'> = {
   notes: '',
 }
 
-export function SearchStep({ trip, seatsApiKey, onChange, onBack, onNext }: Props) {
+export function SearchStep({ trip, seatsApiKey, onChange, onBack, onNext, onSaveWatch }: Props) {
   const origin = flightOrigin(trip.isDomestic)
   const destCode = trip.destinationMode === 'deal_first'
     ? 'anywhere'
@@ -67,6 +68,7 @@ export function SearchStep({ trip, seatsApiKey, onChange, onBack, onNext }: Prop
     seats: trip.constraints.partySize,
   })
   const [apiNote, setApiNote] = useState('')
+  const [watchNote, setWatchNote] = useState('')
 
   const gfSearch = destCode === 'anywhere'
     ? googleFlightsExploreUrl(origin, trip.timeframe.startDate)
@@ -104,8 +106,15 @@ export function SearchStep({ trip, seatsApiKey, onChange, onBack, onNext }: Prop
         {!trip.isDomestic ? (
           <a href={seatsAeroExplorerUrl(origin)} target="_blank" rel="noreferrer">seats.aero from {origin}</a>
         ) : null}
+        {onSaveWatch ? (
+          <button type="button" onClick={() => { onSaveWatch(); setWatchNote('Route saved under Watch. Notify is copy + mailto — no live scrape.') }}>Save route to watchlist</button>
+        ) : null}
       </div>
-      <p className="hint">Origin bias: {origin}. Backups: {AIRPORTS.alsoOkGateways.join(', ')}.</p>
+      {watchNote ? <p className="banner ok">{watchNote}</p> : null}
+      <p className="hint">
+        Origin bias: {origin}.
+        {!trip.isDomestic ? ` Positioning ${trip.positioning.primary} + backups ${trip.positioning.backups.join(', ') || '(none)'}.` : ` Home ${AIRPORTS.domesticHome}.`}
+      </p>
 
       <h3 style={{ marginTop: 18 }}>Paste a cash fare</h3>
       <CashForm value={cashForm} onChange={setCashForm} onAdd={() => {

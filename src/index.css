@@ -197,6 +197,12 @@ a { color: var(--moss); }
   padding: 18px;
 }
 
+button.card {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
 .card h3 { margin-bottom: 6px; }
 
 .balance-card .amount {

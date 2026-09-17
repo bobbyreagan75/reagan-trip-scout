@@ -1,15 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { cairoDemoTrip } from '../data/cairoDemo'
 import { MOCK_BOOK_ITEMS, seedBalanceRows } from '../data/household'
+import { SEED_JAL_IDEAS } from '../data/jalIdeas'
+import { SEED_WATCHES } from '../data/watches'
 import { cashCeilingUsd, dollarsPerHour, quoteExceedsCeiling } from './ceilings'
 import { cppForQuotes, cppVerdict, centsPerPoint } from './cpp'
 import { parseAwardWalletCsv } from './csv'
 import { isNeverPassChannel, laneById, mockBookComplete, scoreDeal } from './dealScore'
 import { isDomesticUsDestination, resolveDomestic } from './domestic'
 import { googleFlightsExploreUrl, googleFlightsSearchUrl } from './googleFlights'
+import { scoreHyattStay } from './hyattScore'
+import { jalCoverage, jalIdeaCpp, jalPoorValue } from './jal'
+import { isEarlyDaypart, orfToGatewayUrl, positioningReady } from './positioning'
 import { seatsAeroSearchUrl } from './seatsAero'
 import { recommendedTransfer, transferOptions } from './transfers'
 import { buildTripBrief, humanTripBrief } from './tripBrief'
+import { emptyHyattStay } from './tripDefaults'
+import { watchAlertText, watchSummary } from './watchlist'
 
 describe('cpp', () => {
   it('computes cents per point net of taxes', () => {
@@ -118,6 +125,9 @@ describe('trip brief', () => {
     expect(humanTripBrief(brief)).toContain('SAMPLE')
     expect(humanTripBrief(brief)).toContain('Hyatt')
     expect(humanTripBrief(brief)).toContain('Deal Score')
+    expect(humanTripBrief(brief)).toContain('Positioning')
+    expect(brief.positioning.primary).toBe('IAD')
+    expect(brief.positioning.backups.length).toBeGreaterThanOrEqual(2)
   })
 })
 
@@ -214,5 +224,69 @@ describe('deal score gate', () => {
     expect(score.canProceedToPay).toBe(true)
     expect(score.recommended).toBe('cash')
     expect(dollarsPerHour(50, 2, false)).toBe(25)
+  })
+})
+
+describe('award watchlist', () => {
+  it('seeds EgyptAir JFK–CAI business ≤75k for two in May 2027', () => {
+    const seed = SEED_WATCHES[0]
+    expect(seed.metal).toBe('EgyptAir')
+    expect(seed.origin).toBe('JFK')
+    expect(seed.destination).toBe('CAI')
+    expect(seed.maxMiles).toBe(75000)
+    expect(seed.seatsNeeded).toBe(2)
+    expect(seed.windowStart).toContain('2027-05')
+    const alert = watchAlertText(seed)
+    expect(alert).toContain('EgyptAir')
+    expect(alert).toContain('Chief of Staff')
+    expect(watchSummary(seed)).toContain('JFK–CAI')
+  })
+})
+
+describe('Hyatt stay scoring', () => {
+  it('fails a non-Hyatt stay and scores certificate-covered nights as PASS', () => {
+    const awards = { freeNightCerts: 2, clubAwards: 1 }
+    const other = { ...emptyHyattStay(), isHyatt: false, rareNonHyatt: false, nights: 3, pointsPerNight: 12000, cashPerNight: 400 }
+    expect(scoreHyattStay(other, awards, 50000).verdict).toBe('FAIL')
+
+    const covered = { ...emptyHyattStay(), nights: 2, freeNightCertsUsed: 2, pointsPerNight: 15000, cashPerNight: 200 }
+    const coveredScore = scoreHyattStay(covered, awards, 50000)
+    expect(coveredScore.paidNights).toBe(0)
+    expect(coveredScore.verdict).toBe('PASS')
+  })
+
+  it('fails stay CPP under 2¢ and passes a luxury Hyatt cash-vs-points', () => {
+    const awards = { freeNightCerts: 0, clubAwards: 0 }
+    const cheap = { ...emptyHyattStay(), pointsPerNight: 25000, cashPerNight: 80, taxesPerNight: 40, nights: 3 }
+    expect(scoreHyattStay(cheap, awards, 200000).verdict).toBe('FAIL')
+
+    const luxury = { ...emptyHyattStay(), pointsPerNight: 12000, cashPerNight: 1800, taxesPerNight: 40, nights: 4 }
+    const scored = scoreHyattStay(luxury, awards, 200000)
+    expect(scored.cpp).toBeGreaterThan(0.1)
+    expect(scored.verdict).toBe('PASS')
+  })
+})
+
+describe('ORF positioning', () => {
+  it('requires at least two backup gateways and flags early hops', () => {
+    expect(positioningReady({ primary: 'IAD', backups: ['JFK'], daypart: 'evening' }, false)).toBe(false)
+    expect(positioningReady({ primary: 'IAD', backups: ['JFK', 'EWR'], daypart: 'evening' }, false)).toBe(true)
+    expect(positioningReady({ primary: 'IAD', backups: [], daypart: 'evening' }, true)).toBe(true)
+    expect(isEarlyDaypart('early')).toBe(true)
+    expect(isEarlyDaypart('evening')).toBe(false)
+    expect(orfToGatewayUrl('JFK')).toContain('ORF')
+    expect(orfToGatewayUrl('JFK')).toContain('JFK')
+  })
+})
+
+describe('JAL stash', () => {
+  it('covers two business one-ways from 240k and flags poor CPP', () => {
+    const idea = SEED_JAL_IDEAS[0]
+    const cover = jalCoverage(240000, idea.milesPerPerson, 2)
+    expect(cover.enough).toBe(true)
+    expect(cover.need).toBe(130000)
+    expect(jalIdeaCpp(idea).cpp).toBeGreaterThan(0.02)
+    const junk = { ...idea, milesPerPerson: 80000, cashCompUsd: 200, taxesUsd: 50 }
+    expect(jalPoorValue(junk)).toBe(true)
   })
 })
