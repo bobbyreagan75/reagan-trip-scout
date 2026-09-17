@@ -1,4 +1,5 @@
 import { MOCK_BOOK_ITEMS, POLICY } from '../../data/household'
+import { useApp } from '../../context/AppContext'
 import { ceilingForQuote, quoteExceedsCeiling } from '../../lib/ceilings'
 import { laneById, mockBookComplete, scoreDeal } from '../../lib/dealScore'
 import { formatMiles, formatUsd } from '../../lib/format'
@@ -14,9 +15,11 @@ type Props = {
 }
 
 export function PayStep({ trip, balances, onChange, onBack, onNext }: Props) {
+  const { setView } = useApp()
   const score = scoreDeal(trip, balances)
   const cashLane = laneById(score, 'cash')
   const pointsLane = laneById(score, 'points')
+  const jal = balances.find((row) => row.key === 'JAL_JMB_Rhonda')
   const cash = trip.cashQuotes.find((q) => q.id === trip.selectedCashId) ?? trip.cashQuotes[0]
   const award = trip.awardQuotes.find((q) => q.id === trip.selectedAwardId) ?? trip.awardQuotes[0]
   const options = award ? transferOptions({ award, balances, partySize: trip.constraints.partySize }) : []
@@ -165,6 +168,14 @@ export function PayStep({ trip, balances, onChange, onBack, onNext }: Props) {
               : 'Mock-book is not complete — no transfer and no booking yet.'}
           </p>
         </>
+      ) : null}
+
+      {jal ? (
+        <p className="banner cash">
+          Rhonda’s JAL Mileage Bank is {formatMiles(jal.amount)} native miles — not a 1:1 transfer dump.
+          Do not speculative-transfer into JAL, and do not burn it on junk CPP.{' '}
+          <button type="button" className="btn-ghost" onClick={() => setView('jal')}>Open JAL ideas</button>
+        </p>
       ) : null}
 
       <div className="progress-actions">

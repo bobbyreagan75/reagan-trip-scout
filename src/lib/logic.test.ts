@@ -265,6 +265,18 @@ describe('Hyatt stay scoring', () => {
     expect(scored.cpp).toBeGreaterThan(0.1)
     expect(scored.verdict).toBe('PASS')
   })
+
+  it('scores Cairo SAMPLE four nights as MARGINAL CPP with enough points on hand', () => {
+    const stay = cairoDemoTrip().hyattStay
+    const rhondaHyatt = seedBalanceRows().find((row) => row.key === 'Hyatt_Rhonda')?.amount ?? 0
+    const scored = scoreHyattStay(stay, { freeNightCerts: 0, clubAwards: 0 }, rhondaHyatt)
+    expect(stay.nights).toBe(4)
+    expect(scored.pointsNeeded).toBe(48000)
+    expect(scored.enoughPoints).toBe(true)
+    expect(scored.cpp).toBeGreaterThan(0.02)
+    expect(scored.cpp).toBeLessThan(0.1)
+    expect(scored.verdict).toBe('MARGINAL')
+  })
 })
 
 describe('ORF positioning', () => {
