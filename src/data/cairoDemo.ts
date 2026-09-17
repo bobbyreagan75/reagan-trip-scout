@@ -68,9 +68,11 @@ export function cairoDemoTrip(): TripDraft {
     selectedAwardId: award.id,
     payWith: null,
     chosenTransferKey: null,
+    redemptionChannel: 'airline_or_program',
+    mockBookChecks: [],
     lodgingNotes: 'Hyatt Globalist default — look at Grand Hyatt Cairo or Andaz if dates line up.',
     hyattSearch: 'Cairo, Egypt',
-    step: 'search',
+    step: 'verify',
     demoLabel: CAIRO_DEMO_LABEL,
   }
 }

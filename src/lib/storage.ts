@@ -37,7 +37,8 @@ export function saveBalances(balances: BalanceRow[]): void {
 }
 
 export function loadTrip(): TripDraft {
-  return readJson(TRIP_KEY, emptyTrip())
+  const stored = readJson<Partial<TripDraft> | null>(TRIP_KEY, null)
+  return { ...emptyTrip(), ...(stored ?? {}) }
 }
 
 export function saveTrip(trip: TripDraft): void {

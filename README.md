@@ -25,7 +25,7 @@ Then open the URL Vite prints (usually `http://localhost:5173`).
 | `npm run dev` | Local Vite dev server |
 | `npm run build` | Typecheck + production build |
 | `npm run preview` | Serve the production build |
-| `npm test` | Unit tests for CPP, ceilings, transfers, CSV, briefs |
+| `npm test` | Unit tests for CPP, ceilings, Deal Score, transfers, CSV, briefs |
 | `npm run lint` | Oxlint |
 
 ### Login
@@ -44,9 +44,16 @@ Shared household passphrase (hashed in the browser, stored only in `localStorage
 4. **Search**
    - **U.S. domestic → cash only** via Google Flights (ORF home). Points are not offered.
    - **International →** Google Flights (IAD positioning) **and** seats.aero deep links, with paste-back for cash and awards.
-5. **Pay** — cash vs points, 1:1 transfer partners, cents-per-point vs cash (≥2¢ floor), mock-book-before-transfer checklist, Amex Membership Rewards before Bilt when both work.
-6. **Stay** — Hyatt Globalist lodging bias; Bilt is protected for Hyatt.
-7. **Ask Chief of Staff** — human summary + JSON brief, copy, and `mailto:bobbyreagan75@hotmail.com`.
+5. **Deal Score (required gate)** — after a tentative flight is selected, before cash vs points or any book/transfer:
+   - Domestic US: cash path only; points redemptions **FAIL**
+   - Cash: $/hour vs $30 / $60 / $90 ceilings (coach / PE / biz-first; double for round trip)
+   - Points: CPP = (cash − taxes/fees) / points; **FAIL** under 2¢; luxury target 10–25¢
+   - Transfers: 1:1 or better only; mock-book checklist required before transfer
+   - Never pass: portal / gift card / statement credit / flexible points on cruises
+   - Clear **PASS / FAIL / MARGINAL** with the numbers used
+6. **Pay** — cash vs points only for lanes that cleared the gate; 1:1 transfer partners; Amex before Bilt; mock-book before transfer
+7. **Stay** — Hyatt Globalist lodging bias; Bilt is protected for Hyatt.
+8. **Ask Chief of Staff** — human summary + JSON brief (includes Deal Score), copy, and `mailto:bobbyreagan75@hotmail.com`.
 
 Balances live under **Balances** (seeded from `src/data/household-profile.json`, snapshot dated 14 Sep 2026).
 
@@ -59,7 +66,7 @@ On the home desk, click **Load Cairo SAMPLE demo**. It fills:
 - **SAMPLE** editable cash paste (EgyptAir-style Google Flights placeholder)
 - **SAMPLE** editable award paste (EgyptAir metal / Aeroplan-style miles + taxes — not live availability)
 
-Replace those SAMPLE figures with real pastes before treating the trip as bookable. Mock-book any award before transferring a point.
+Replace those SAMPLE figures with real pastes before treating the trip as bookable. The demo opens on **Deal Score**: SAMPLE cash fails the hourly ceiling; SAMPLE Aeroplan points land **MARGINAL** (~7¢, over 2¢, shy of 10–25¢). Cash vs points stays closed until a lane is PASS or MARGINAL. Mock-book any award before transferring a point.
 
 ## Household operating rules (as encoded here)
 

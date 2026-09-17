@@ -41,6 +41,7 @@ export function HomePage() {
         <article className="card">
           <h3>How this desk flies</h3>
           <ul className="policy-list">
+            <li>{POLICY.dealGate}</li>
             <li>{POLICY.domesticCash}</li>
             <li>{POLICY.pointsLane}</li>
             <li>{POLICY.minCpp}</li>

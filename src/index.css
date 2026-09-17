@@ -437,6 +437,70 @@ textarea { min-height: 88px; resize: vertical; }
   gap: 8px;
 }
 
+.choice:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.verdict.PASS { background: #d7eee0; color: #1d5c3a; }
+.verdict.FAIL { background: #f8dcd4; color: #8a2f1c; }
+.verdict.MARGINAL { background: #f3e3c4; color: #7a4b12; }
+
+.score-hero {
+  text-align: center;
+  padding: 18px 12px 8px;
+  margin: 16px 0 8px;
+  border-radius: 16px;
+  background: var(--mist);
+}
+
+.score-hero.pass { background: #e4f0e8; }
+.score-hero.fail { background: #f8e4dc; }
+.score-hero.marginal { background: #f3e3c4; }
+
+.score-hero .stamp {
+  font-family: var(--font-display);
+  font-size: 40px;
+  letter-spacing: 0.06em;
+  margin: 8px 0 4px;
+}
+
+.check-row {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--rule);
+  align-items: start;
+}
+
+.nums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.nums span {
+  background: var(--mist);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
 hr.rule {
   border: 0;
   border-top: 1px solid var(--rule);

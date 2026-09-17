@@ -26,6 +26,8 @@ export function emptyTrip(): TripDraft {
     selectedAwardId: null,
     payWith: null,
     chosenTransferKey: null,
+    redemptionChannel: null,
+    mockBookChecks: [],
     lodgingNotes: '',
     hyattSearch: '',
     step: 'where',

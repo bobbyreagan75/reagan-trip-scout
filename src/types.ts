@@ -7,9 +7,19 @@ export type WizardStep =
   | 'when'
   | 'constraints'
   | 'search'
+  | 'verify'
   | 'pay'
   | 'lodge'
   | 'brief'
+
+export type DealVerdict = 'PASS' | 'FAIL' | 'MARGINAL'
+
+export type RedemptionChannel =
+  | 'airline_or_program'
+  | 'portal'
+  | 'gift_card'
+  | 'statement_credit'
+  | 'cruise_flexible_points'
 
 export type DestinationMode = 'specific' | 'deal_first'
 
@@ -109,6 +119,8 @@ export type TripDraft = {
   selectedAwardId: string | null
   payWith: PayWith | null
   chosenTransferKey: BalanceKey | null
+  redemptionChannel: RedemptionChannel | null
+  mockBookChecks: boolean[]
   lodgingNotes: string
   hyattSearch: string
   step: WizardStep

@@ -2,6 +2,7 @@ import { WhereStep } from '../components/wizard/WhereStep'
 import { WhenStep } from '../components/wizard/WhenStep'
 import { ConstraintsStep } from '../components/wizard/ConstraintsStep'
 import { SearchStep } from '../components/wizard/SearchStep'
+import { VerifyStep } from '../components/wizard/VerifyStep'
 import { PayStep } from '../components/wizard/PayStep'
 import { LodgeStep } from '../components/wizard/LodgeStep'
 import { BriefStep } from '../components/wizard/BriefStep'
@@ -13,6 +14,7 @@ const STEPS: { id: WizardStep; label: string }[] = [
   { id: 'when', label: 'When' },
   { id: 'constraints', label: 'Party' },
   { id: 'search', label: 'Search' },
+  { id: 'verify', label: 'Score' },
   { id: 'pay', label: 'Pay' },
   { id: 'lodge', label: 'Stay' },
   { id: 'brief', label: 'Brief' },
@@ -61,6 +63,15 @@ export function PlanPage() {
           seatsApiKey={settings.seatsApiKey}
           onChange={patch}
           onBack={() => shift(-1)}
+          onNext={() => go('verify')}
+        />
+      )}
+      {trip.step === 'verify' && (
+        <VerifyStep
+          trip={trip}
+          balances={balances}
+          onChange={patch}
+          onBack={() => go('search')}
           onNext={() => go('pay')}
         />
       )}
@@ -69,7 +80,7 @@ export function PlanPage() {
           trip={trip}
           balances={balances}
           onChange={patch}
-          onBack={() => shift(-1)}
+          onBack={() => go('verify')}
           onNext={() => go('lodge')}
         />
       )}

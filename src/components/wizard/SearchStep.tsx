@@ -184,7 +184,7 @@ export function SearchStep({ trip, seatsApiKey, onChange, onBack, onNext }: Prop
       <div className="progress-actions">
         <button className="btn-ghost" type="button" onClick={onBack}>Back</button>
         <button className="btn" type="button" disabled={!canContinue} onClick={onNext}>
-          {trip.isDomestic ? 'Confirm cash' : 'Cash or points?'}
+          {trip.isDomestic ? 'Score this cash fare' : 'Score this deal'}
         </button>
       </div>
     </article>

@@ -53,7 +53,25 @@ export const POLICY = {
     'Hyatt Globalist is the house default. Plan on Hyatt for nearly every stay (~98%).',
   earning:
     'Earn from natural spend and fair deals. No manufactured spend. Rakuten pays out as Amex Membership Rewards.',
+  dealGate:
+    'No cash-vs-points decision and no transfer until the Deal Score clears. PASS, MARGINAL, or FAIL — with the numbers on the table.',
 } as const
+
+export const MOCK_BOOK_ITEMS = [
+  'Search the award on the program site and start a mock booking with both names.',
+  'Confirm metal, cabin, dates, seat count, and taxes before anything moves.',
+  'Screenshot or hold the PNR. If it cannot be held, keep the browser session open.',
+  'Only then transfer 1:1 from the chosen flexible currency.',
+  'Book immediately after the transfer posts. Never transfer “just in case.”',
+  'Skip any transfer that is not 1:1. Bonus-only or worse ratios are a no.',
+] as const
+
+export const NEVER_PASS_CHANNELS = [
+  'portal',
+  'gift_card',
+  'statement_credit',
+  'cruise_flexible_points',
+] as const
 
 export const SEED_BALANCES: Omit<BalanceRow, 'updatedAt' | 'source'>[] = [
   { key: 'Amex_MR_combined', program: 'Amex Membership Rewards', traveler: 'Combined', amount: 655577 },

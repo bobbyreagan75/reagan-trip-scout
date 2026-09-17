@@ -1,8 +1,9 @@
 import { AIRPORTS, APP_NAME, COS_EMAIL, HOUSEHOLD, POLICY } from '../data/household'
 import { cppForQuotes, formatCpp } from './cpp'
 import { ceilingForQuote } from './ceilings'
+import { scoreDeal } from './dealScore'
 import { recommendedTransfer, transferOptions } from './transfers'
-import type { BalanceRow, TripDraft } from '../types'
+import type { BalanceRow, DealVerdict, TripDraft } from '../types'
 import { flightOrigin } from './tripDefaults'
 
 export type TripBrief = {
@@ -24,6 +25,13 @@ export type TripBrief = {
   cpp: string | null
   transfer: ReturnType<typeof recommendedTransfer> | null
   cashCeilingUsd: number | null
+  dealScore: {
+    overall: DealVerdict
+    recommended: 'cash' | 'points' | null
+    canProceedToPay: boolean
+    canBookPoints: boolean
+    lanes: { lane: 'cash' | 'points'; verdict: DealVerdict; allowed: boolean; headline: string }[]
+  }
   householdRules: string[]
   nextAsks: string[]
 }
@@ -36,6 +44,8 @@ export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy:
   const transfer = award
     ? recommendedTransfer(transferOptions({ award, balances, partySize: trip.constraints.partySize }))
     : undefined
+
+  const deal = scoreDeal(trip, balances)
 
   return {
     generatedAt: new Date().toISOString(),
@@ -56,6 +66,18 @@ export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy:
     cpp: cpp === null ? null : formatCpp(cpp),
     transfer: transfer ?? null,
     cashCeilingUsd: cash ? ceilingForQuote(cash) : null,
+    dealScore: {
+      overall: deal.overall,
+      recommended: deal.recommended,
+      canProceedToPay: deal.canProceedToPay,
+      canBookPoints: deal.canBookPoints,
+      lanes: deal.lanes.map((lane) => ({
+        lane: lane.lane,
+        verdict: lane.verdict,
+        allowed: lane.allowed,
+        headline: lane.headline,
+      })),
+    },
     householdRules: Object.values(POLICY),
     nextAsks: nextAsks(trip),
   }
@@ -76,6 +98,8 @@ export function humanTripBrief(brief: TripBrief): string {
     `Pay with: ${brief.payWith ?? 'not chosen yet'}`,
     brief.cpp ? `CPP vs cash: ${brief.cpp}` : '',
     brief.cashCeilingUsd != null ? `Cash ceiling (selected fare hours): $${brief.cashCeilingUsd.toLocaleString('en-US')}` : '',
+    `Deal Score: ${brief.dealScore.overall}${brief.dealScore.recommended ? ` · recommended ${brief.dealScore.recommended}` : ''}`,
+    ...brief.dealScore.lanes.map((lane) => `  - ${lane.lane}: ${lane.verdict} — ${lane.headline}`),
     '',
     'Cash quotes:',
     ...brief.cashQuotes.map((q) =>
@@ -112,10 +136,13 @@ function nextAsks(trip: TripDraft): string[] {
     'Confirm whether this is still the destination, or switch to a better luxury deal.',
     'Hold or mock-book any award before transferring a single point.',
   ]
+  if (trip.redemptionChannel && trip.redemptionChannel !== 'airline_or_program') {
+    asks.unshift('This redemption type never passes the household Deal Score. Switch to an airline ticket or program award.')
+  }
   if (trip.isDomestic) {
-    asks.unshift('Stay on cash for this U.S. domestic routing and ignore points.')
+    asks.unshift('Stay on cash for this U.S. domestic routing. Points fail Deal Score here.')
   } else {
-    asks.unshift('Compare cash vs points at ≥2¢/point and prefer Amex Membership Rewards before Bilt when both transfer.')
+    asks.unshift('Run Deal Score before cash vs points. Prefer Amex Membership Rewards before Bilt when both transfer.')
   }
   asks.push('Keep lodging on Hyatt Globalist unless there is a rare reason not to.')
   if (trip.cashQuotes.some((q) => q.sample) || trip.awardQuotes.some((q) => q.sample)) {
