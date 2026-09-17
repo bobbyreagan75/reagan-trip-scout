@@ -1,8 +1,12 @@
 import { AIRPORTS, APP_NAME, COS_EMAIL, HOUSEHOLD, POLICY } from '../data/household'
 import { cppForQuotes, formatCpp } from './cpp'
 import { ceilingForQuote } from './ceilings'
+import { scoreDeal } from './dealScore'
+import { scoreHyattStay } from './hyattScore'
+import { bonusSummary } from './alerts'
+import { defaultHyattAwards } from './storage'
 import { recommendedTransfer, transferOptions } from './transfers'
-import type { BalanceRow, TripDraft } from '../types'
+import type { BalanceRow, DealVerdict, HyattAwards, TransferBonus, TripDraft } from '../types'
 import { flightOrigin } from './tripDefaults'
 
 export type TripBrief = {
@@ -20,15 +24,30 @@ export type TripBrief = {
   payWith: string | null
   cashQuotes: TripDraft['cashQuotes']
   awardQuotes: TripDraft['awardQuotes']
-  lodging: { hyattDefault: true; notes: string; search: string }
+  lodging: { hyattDefault: true; notes: string; search: string; stayScore: string; property: string }
+  positioning: { primary: string; backups: string[]; daypart: string }
   cpp: string | null
   transfer: ReturnType<typeof recommendedTransfer> | null
   cashCeilingUsd: number | null
+  dealScore: {
+    overall: DealVerdict
+    recommended: 'cash' | 'points' | null
+    canProceedToPay: boolean
+    canBookPoints: boolean
+    lanes: { lane: 'cash' | 'points'; verdict: DealVerdict; allowed: boolean; headline: string }[]
+  }
   householdRules: string[]
   nextAsks: string[]
+  appliedBonuses: string[]
 }
 
-export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy: string): TripBrief {
+export function buildTripBrief(
+  trip: TripDraft,
+  balances: BalanceRow[],
+  askedBy: string,
+  hyattAwards: HyattAwards = defaultHyattAwards(),
+  bonuses: TransferBonus[] = [],
+): TripBrief {
   const origin = flightOrigin(trip.isDomestic)
   const cash = trip.cashQuotes.find((q) => q.id === trip.selectedCashId) ?? trip.cashQuotes[0]
   const award = trip.awardQuotes.find((q) => q.id === trip.selectedAwardId) ?? trip.awardQuotes[0]
@@ -36,6 +55,13 @@ export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy:
   const transfer = award
     ? recommendedTransfer(transferOptions({ award, balances, partySize: trip.constraints.partySize }))
     : undefined
+
+  const deal = scoreDeal(trip, balances)
+  const hyattPoints = balances.find((row) => row.key === 'Hyatt_Rhonda')?.amount ?? 0
+  const stayScore = scoreHyattStay(trip.hyattStay, hyattAwards, hyattPoints)
+  const appliedBonuses = bonuses
+    .filter((bonus) => (trip.appliedBonusIds ?? []).includes(bonus.id))
+    .map(bonusSummary)
 
   return {
     generatedAt: new Date().toISOString(),
@@ -52,12 +78,36 @@ export function buildTripBrief(trip: TripDraft, balances: BalanceRow[], askedBy:
     payWith: trip.payWith,
     cashQuotes: trip.cashQuotes,
     awardQuotes: trip.awardQuotes,
-    lodging: { hyattDefault: true, notes: trip.lodgingNotes, search: trip.hyattSearch || trip.destination },
+    lodging: {
+      hyattDefault: true,
+      notes: trip.lodgingNotes,
+      search: trip.hyattSearch || trip.destination,
+      stayScore: stayScore.headline,
+      property: trip.hyattStay.property,
+    },
+    positioning: {
+      primary: trip.positioning.primary,
+      backups: trip.positioning.backups,
+      daypart: trip.positioning.daypart,
+    },
     cpp: cpp === null ? null : formatCpp(cpp),
     transfer: transfer ?? null,
     cashCeilingUsd: cash ? ceilingForQuote(cash) : null,
+    dealScore: {
+      overall: deal.overall,
+      recommended: deal.recommended,
+      canProceedToPay: deal.canProceedToPay,
+      canBookPoints: deal.canBookPoints,
+      lanes: deal.lanes.map((lane) => ({
+        lane: lane.lane,
+        verdict: lane.verdict,
+        allowed: lane.allowed,
+        headline: lane.headline,
+      })),
+    },
     householdRules: Object.values(POLICY),
     nextAsks: nextAsks(trip),
+    appliedBonuses,
   }
 }
 
@@ -76,6 +126,8 @@ export function humanTripBrief(brief: TripBrief): string {
     `Pay with: ${brief.payWith ?? 'not chosen yet'}`,
     brief.cpp ? `CPP vs cash: ${brief.cpp}` : '',
     brief.cashCeilingUsd != null ? `Cash ceiling (selected fare hours): $${brief.cashCeilingUsd.toLocaleString('en-US')}` : '',
+    `Deal Score: ${brief.dealScore.overall}${brief.dealScore.recommended ? ` · recommended ${brief.dealScore.recommended}` : ''}`,
+    ...brief.dealScore.lanes.map((lane) => `  - ${lane.lane}: ${lane.verdict} — ${lane.headline}`),
     '',
     'Cash quotes:',
     ...brief.cashQuotes.map((q) =>
@@ -90,7 +142,13 @@ export function humanTripBrief(brief: TripBrief): string {
     brief.transfer
       ? `Transfer path: ${brief.transfer.currencyName} → ${brief.transfer.program} at 1:1 · need ${brief.transfer.milesNeeded.toLocaleString('en-US')} · on-hand ${brief.transfer.balance.toLocaleString('en-US')}`
       : 'Transfer path: none yet',
-    `Lodging: Hyatt Globalist default. ${brief.lodging.notes || 'No hotel notes yet.'}`,
+    brief.appliedBonuses.length
+      ? `Transfer bonuses marked for this trip: ${brief.appliedBonuses.join('; ')}`
+      : 'Transfer bonuses marked for this trip: none',
+    `Lodging: ${brief.lodging.stayScore}. ${brief.lodging.notes || 'No hotel notes yet.'}`,
+    brief.domestic
+      ? 'Positioning: none — ORF home.'
+      : `Positioning: ORF → ${brief.positioning.primary} · backups ${brief.positioning.backups.join(', ') || 'none'} · ${brief.positioning.daypart}`,
     '',
     'Please keep hunting with these household rules in mind, then reply with options:',
     ...brief.nextAsks.map((ask) => `  • ${ask}`),
@@ -112,12 +170,18 @@ function nextAsks(trip: TripDraft): string[] {
     'Confirm whether this is still the destination, or switch to a better luxury deal.',
     'Hold or mock-book any award before transferring a single point.',
   ]
-  if (trip.isDomestic) {
-    asks.unshift('Stay on cash for this U.S. domestic routing and ignore points.')
-  } else {
-    asks.unshift('Compare cash vs points at ≥2¢/point and prefer Amex Membership Rewards before Bilt when both transfer.')
+  if (trip.redemptionChannel && trip.redemptionChannel !== 'airline_or_program') {
+    asks.unshift('This redemption type never passes the household Deal Score. Switch to an airline ticket or program award.')
   }
-  asks.push('Keep lodging on Hyatt Globalist unless there is a rare reason not to.')
+  if (trip.isDomestic) {
+    asks.unshift('Stay on cash for this U.S. domestic routing. Points fail Deal Score here.')
+  } else {
+    asks.unshift('Run Deal Score before cash vs points. Prefer Amex Membership Rewards before Bilt when both transfer.')
+  }
+  asks.push('Keep lodging on Hyatt Globalist unless there is a rare reason not to. Score the stay vs 2¢.')
+  if (!trip.isDomestic && trip.positioning.backups.length < 2) {
+    asks.push('Add 2–3 ORF→gateway backup positioning options (JFK/EWR/BOS/ATL…).')
+  }
   if (trip.cashQuotes.some((q) => q.sample) || trip.awardQuotes.some((q) => q.sample)) {
     asks.push('Replace SAMPLE placeholder fares with live pasted numbers from Google Flights / seats.aero.')
   }

@@ -1,10 +1,13 @@
+import { BrandMark } from './components/BrandMark'
 import { Layout } from './components/Layout'
 import { useApp } from './context/AppContext'
 import { BalancesPage } from './pages/BalancesPage'
 import { HomePage } from './pages/HomePage'
+import { JalPage } from './pages/JalPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlanPage } from './pages/PlanPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { WatchPage } from './pages/WatchPage'
 
 export default function App() {
   const { session, view, ready } = useApp()
@@ -12,6 +15,7 @@ export default function App() {
   if (!ready) {
     return (
       <div className="login-wrap">
+        <BrandMark size={72} alt="Trip Scout" />
         <p className="muted">Opening the household desk…</p>
       </div>
     )
@@ -23,6 +27,8 @@ export default function App() {
     <Layout>
       {view === 'home' && <HomePage />}
       {view === 'plan' && <PlanPage />}
+      {view === 'watch' && <WatchPage />}
+      {view === 'jal' && <JalPage />}
       {view === 'balances' && <BalancesPage />}
       {view === 'settings' && <SettingsPage />}
     </Layout>

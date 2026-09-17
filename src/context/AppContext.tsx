@@ -1,23 +1,33 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { cairoDemoTrip } from '../data/cairoDemo'
+import { SEED_BONUSES } from '../data/alerts'
 import { seedBalanceRows } from '../data/household'
+import { SEED_JAL_IDEAS } from '../data/jalIdeas'
+import { SEED_WATCHES } from '../data/watches'
 import { demoPassHash, hashPassphrase, verifyPassphrase } from '../lib/auth'
 import {
-  defaultSettings,
   loadPersistedState,
   resetHouseholdData,
   saveBalances,
+  saveBonuses,
+  saveEarnNotes,
+  saveJalIdeas,
   saveSession,
   saveSettings,
   saveTrip,
+  saveWatches,
 } from '../lib/storage'
 import { emptyTrip } from '../lib/tripDefaults'
-import type { BalanceRow, Session, Settings, TravelerName, TripDraft, View } from '../types'
+import type { AwardWatch, BalanceRow, EarnNotes, JalIdea, Session, Settings, TransferBonus, TravelerName, TripDraft, View } from '../types'
 
 type AppContextValue = {
   settings: Settings
   balances: BalanceRow[]
   trip: TripDraft
+  watches: AwardWatch[]
+  jalIdeas: JalIdea[]
+  bonuses: TransferBonus[]
+  earnNotes: EarnNotes
   session: Session | null
   view: View
   ready: boolean
@@ -26,6 +36,10 @@ type AppContextValue = {
   setView: (view: View) => void
   setTrip: (trip: TripDraft | ((current: TripDraft) => TripDraft)) => void
   setBalances: (balances: BalanceRow[] | ((current: BalanceRow[]) => BalanceRow[])) => void
+  setWatches: (watches: AwardWatch[] | ((current: AwardWatch[]) => AwardWatch[])) => void
+  setJalIdeas: (ideas: JalIdea[] | ((current: JalIdea[]) => JalIdea[])) => void
+  setBonuses: (bonuses: TransferBonus[] | ((current: TransferBonus[]) => TransferBonus[])) => void
+  setEarnNotes: (notes: EarnNotes | ((current: EarnNotes) => EarnNotes)) => void
   updateSettings: (patch: Partial<Settings>) => void
   changePassphrase: (next: string) => Promise<void>
   loadCairoDemo: () => void
@@ -37,9 +51,18 @@ const AppContext = createContext<AppContextValue | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
-  const [settings, setSettings] = useState<Settings>(defaultSettings())
+  const [settings, setSettings] = useState<Settings>(() => ({
+    passHash: '',
+    seatsApiKey: '',
+    awardWalletUrl: 'https://awardwallet.com/',
+    hyattAwards: { freeNightCerts: 0, clubAwards: 0 },
+  }))
   const [balances, setBalancesState] = useState<BalanceRow[]>([])
   const [trip, setTripState] = useState<TripDraft>(emptyTrip())
+  const [watches, setWatchesState] = useState<AwardWatch[]>(SEED_WATCHES)
+  const [jalIdeas, setJalIdeasState] = useState<JalIdea[]>(SEED_JAL_IDEAS)
+  const [bonuses, setBonusesState] = useState<TransferBonus[]>(SEED_BONUSES)
+  const [earnNotes, setEarnNotesState] = useState<EarnNotes>({})
   const [session, setSession] = useState<Session | null>(null)
   const [view, setView] = useState<View>('home')
 
@@ -48,6 +71,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBalancesState(persisted.balances)
     setTripState(persisted.trip)
     setSession(persisted.session)
+    setWatchesState(persisted.watches)
+    setJalIdeasState(persisted.jalIdeas)
+    setBonusesState(persisted.bonuses)
+    setEarnNotesState(persisted.earnNotes)
     void (async () => {
       const stored = persisted.settings
       if (!stored.passHash) {
@@ -73,6 +100,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBalancesState((current) => {
       const resolved = typeof next === 'function' ? next(current) : next
       saveBalances(resolved)
+      return resolved
+    })
+  }, [])
+
+  const setWatches = useCallback((next: AwardWatch[] | ((current: AwardWatch[]) => AwardWatch[])) => {
+    setWatchesState((current) => {
+      const resolved = typeof next === 'function' ? next(current) : next
+      saveWatches(resolved)
+      return resolved
+    })
+  }, [])
+
+  const setJalIdeas = useCallback((next: JalIdea[] | ((current: JalIdea[]) => JalIdea[])) => {
+    setJalIdeasState((current) => {
+      const resolved = typeof next === 'function' ? next(current) : next
+      saveJalIdeas(resolved)
+      return resolved
+    })
+  }, [])
+
+  const setBonuses = useCallback((next: TransferBonus[] | ((current: TransferBonus[]) => TransferBonus[])) => {
+    setBonusesState((current) => {
+      const resolved = typeof next === 'function' ? next(current) : next
+      saveBonuses(resolved)
+      return resolved
+    })
+  }, [])
+
+  const setEarnNotes = useCallback((next: EarnNotes | ((current: EarnNotes) => EarnNotes)) => {
+    setEarnNotesState((current) => {
+      const resolved = typeof next === 'function' ? next(current) : next
+      saveEarnNotes(resolved)
       return resolved
     })
   }, [])
@@ -116,15 +175,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetData = useCallback(() => {
     resetHouseholdData()
-    setBalancesState(seedBalanceRows())
-    saveBalances(seedBalanceRows())
+    const seeded = seedBalanceRows()
+    setBalancesState(seeded)
+    saveBalances(seeded)
+    setWatches(SEED_WATCHES)
+    setJalIdeas(SEED_JAL_IDEAS)
+    setBonuses(SEED_BONUSES)
+    setEarnNotes({})
     setTrip(emptyTrip())
-  }, [setTrip])
+  }, [setTrip, setWatches, setJalIdeas, setBonuses, setEarnNotes])
 
   const value = useMemo<AppContextValue>(() => ({
     settings,
     balances,
     trip,
+    watches,
+    jalIdeas,
+    bonuses,
+    earnNotes,
     session,
     view,
     ready,
@@ -133,6 +201,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setView,
     setTrip,
     setBalances,
+    setWatches,
+    setJalIdeas,
+    setBonuses,
+    setEarnNotes,
     updateSettings,
     changePassphrase,
     loadCairoDemo,
@@ -142,6 +214,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings,
     balances,
     trip,
+    watches,
+    jalIdeas,
+    bonuses,
+    earnNotes,
     session,
     view,
     ready,
@@ -149,6 +225,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     logout,
     setTrip,
     setBalances,
+    setWatches,
+    setJalIdeas,
+    setBonuses,
+    setEarnNotes,
     updateSettings,
     changePassphrase,
     loadCairoDemo,

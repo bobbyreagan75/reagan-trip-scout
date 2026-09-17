@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/logo.png" alt="Trip Scout" width="160" height="160" />
+</p>
+
 # Reagan Trip Scout
 
 Private household travel desk for **Robert & Rhonda Reagan**. This is a personal prototype, not a public product.
@@ -20,12 +24,14 @@ npm run dev
 
 Then open the URL Vite prints (usually `http://localhost:5173`).
 
+The home desk opens on **This week**: editable transfer bonuses, natural-spend earn tips (including a Freedom Flex 5% category placeholder), and open watchlist alerts. Nothing auto-emails. Program devaluations and tool news stay with Chief of Staff.
+
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Local Vite dev server |
 | `npm run build` | Typecheck + production build |
 | `npm run preview` | Serve the production build |
-| `npm test` | Unit tests for CPP, ceilings, transfers, CSV, briefs |
+| `npm test` | Unit tests for CPP, ceilings, Deal Score, Hyatt stay, watches, JAL, positioning, This week bonuses, CSV, briefs |
 | `npm run lint` | Oxlint |
 
 ### Login
@@ -44,9 +50,28 @@ Shared household passphrase (hashed in the browser, stored only in `localStorage
 4. **Search**
    - **U.S. domestic → cash only** via Google Flights (ORF home). Points are not offered.
    - **International →** Google Flights (IAD positioning) **and** seats.aero deep links, with paste-back for cash and awards.
-5. **Pay** — cash vs points, 1:1 transfer partners, cents-per-point vs cash (≥2¢ floor), mock-book-before-transfer checklist, Amex Membership Rewards before Bilt when both work.
-6. **Stay** — Hyatt Globalist lodging bias; Bilt is protected for Hyatt.
-7. **Ask Chief of Staff** — human summary + JSON brief, copy, and `mailto:bobbyreagan75@hotmail.com`.
+5. **Deal Score (required gate)** — after a tentative flight is selected, before cash vs points or any book/transfer:
+   - Domestic US: cash path only; points redemptions **FAIL**
+   - Cash: $/hour vs $30 / $60 / $90 ceilings (coach / PE / biz-first; double for round trip)
+   - Points: CPP = (cash − taxes/fees) / points; **FAIL** under 2¢; luxury target 10–25¢
+   - Transfers: 1:1 or better only; mock-book checklist required before transfer
+   - Never pass: portal / gift card / statement credit / flexible points on cruises
+   - Clear **PASS / FAIL / MARGINAL** with the numbers used
+6. **Pay** — cash vs points only for lanes that cleared the gate; 1:1 transfer partners; Amex before Bilt; mock-book before transfer
+7. **ORF positioning** — international hops: cash ORF→IAD plus 2–3 backups (JFK/EWR/BOS/ATL…), later departures preferred, early mornings flagged, Google Flights deep links
+8. **Stay** — Hyatt Globalist scoring (category/points vs cash, CPP vs 2¢, club / late checkout / informational suite-upgrade note, free-night and club awards from Settings)
+9. **Ask Chief of Staff** — human summary + JSON brief (includes Deal Score, positioning, stay score), copy, and `mailto:bobbyreagan75@hotmail.com`.
+
+Also in the top nav:
+
+- **Watch** — award watchlist (route, cabin, max miles, seats, date window). Seed: EgyptAir JFK–CAI business ≤75k for 2 around May 2027. Notify = copy alert + mailto (no live scrape; Chief of Staff chat/email later).
+- **JAL** — Rhonda’s ~240k JMB. Editable SAMPLE transpacific / Asia premium-cabin ideas with CPP. Mock-book first; no speculative transfer; don’t burn on poor value.
+
+**This week** (home, top of the desk):
+
+- Transfer bonuses you type in (program → partner, %, end date). SAMPLE rows are editable. Cash vs points asks **Applies to this trip?** when a bonus looks like a match.
+- Earn this week: Bilt, Amex Gold, Amex Platinum, Chase Sapphire Reserve, Freedom Flex (rotating 5% placeholder), Freedom Unlimited, Ink Business Preferred. Natural spend only; notes persist in this browser.
+- Watchlist hits: open watches with copy/mailto. No auto-email. Devaluations and tool/product news are out of this panel.
 
 Balances live under **Balances** (seeded from `src/data/household-profile.json`, snapshot dated 14 Sep 2026).
 
@@ -59,7 +84,7 @@ On the home desk, click **Load Cairo SAMPLE demo**. It fills:
 - **SAMPLE** editable cash paste (EgyptAir-style Google Flights placeholder)
 - **SAMPLE** editable award paste (EgyptAir metal / Aeroplan-style miles + taxes — not live availability)
 
-Replace those SAMPLE figures with real pastes before treating the trip as bookable. Mock-book any award before transferring a point.
+Replace those SAMPLE figures with real pastes before treating the trip as bookable. The demo opens on **Deal Score**: SAMPLE cash fails the hourly ceiling; SAMPLE Aeroplan points land **MARGINAL** (~7¢, over 2¢, shy of 10–25¢). Cash vs points stays closed until a lane is PASS or MARGINAL. Mock-book any award before transferring a point.
 
 ## Household operating rules (as encoded here)
 

@@ -1,15 +1,28 @@
 export type TravelerName = 'Robert Reagan' | 'Rhonda Reagan'
 
-export type View = 'home' | 'plan' | 'balances' | 'settings'
+export type View = 'home' | 'plan' | 'watch' | 'jal' | 'balances' | 'settings'
 
 export type WizardStep =
   | 'where'
   | 'when'
   | 'constraints'
+  | 'position'
   | 'search'
+  | 'verify'
   | 'pay'
   | 'lodge'
   | 'brief'
+
+export type Daypart = 'early' | 'morning' | 'afternoon' | 'evening' | 'late'
+
+export type DealVerdict = 'PASS' | 'FAIL' | 'MARGINAL'
+
+export type RedemptionChannel =
+  | 'airline_or_program'
+  | 'portal'
+  | 'gift_card'
+  | 'statement_credit'
+  | 'cruise_flexible_points'
 
 export type DestinationMode = 'specific' | 'deal_first'
 
@@ -82,6 +95,87 @@ export type AwardQuote = {
   notes: string
 }
 
+export type AwardWatch = {
+  id: string
+  metal: string
+  program: string
+  origin: string
+  destination: string
+  cabin: Cabin
+  maxMiles: number
+  seatsNeeded: number
+  windowStart: string
+  windowEnd: string
+  notes: string
+}
+
+export type TripPositioning = {
+  primary: string
+  backups: string[]
+  daypart: Daypart
+}
+
+export type HyattAwards = {
+  freeNightCerts: number
+  clubAwards: number
+}
+
+export type HyattStay = {
+  property: string
+  isHyatt: boolean
+  rareNonHyatt: boolean
+  nights: number
+  category: string
+  pointsPerNight: number
+  cashPerNight: number
+  taxesPerNight: number
+  freeNightCertsUsed: number
+  clubAwardsUsed: number
+  suiteUpgradeNote: boolean
+  clubAccess: boolean
+  lateCheckout: boolean
+}
+
+export type JalIdea = {
+  id: string
+  title: string
+  region: string
+  cabin: Cabin
+  milesPerPerson: number
+  cashCompUsd: number
+  taxesUsd: number
+  sample: boolean
+  notes: string
+}
+
+export type TransferBonus = {
+  id: string
+  fromProgram: string
+  partner: string
+  bonusPercent: number
+  endDate: string
+  notes: string
+  sample: boolean
+}
+
+export type EarnCardId =
+  | 'bilt'
+  | 'amex-gold'
+  | 'amex-plat'
+  | 'csr'
+  | 'flex'
+  | 'unlimited'
+  | 'ink'
+
+export type EarnCard = {
+  id: EarnCardId
+  card: string
+  tip: string
+  flexPlaceholder?: boolean
+}
+
+export type EarnNotes = Partial<Record<EarnCardId, { note: string; flexCategories?: string }>>
+
 export type TransferOption = {
   currencyKey: BalanceKey
   currencyName: string
@@ -109,16 +203,22 @@ export type TripDraft = {
   selectedAwardId: string | null
   payWith: PayWith | null
   chosenTransferKey: BalanceKey | null
+  redemptionChannel: RedemptionChannel | null
+  mockBookChecks: boolean[]
+  positioning: TripPositioning
+  hyattStay: HyattStay
   lodgingNotes: string
   hyattSearch: string
   step: WizardStep
   demoLabel: string | null
+  appliedBonusIds: string[]
 }
 
 export type Settings = {
   passHash: string
   seatsApiKey: string
   awardWalletUrl: string
+  hyattAwards: HyattAwards
 }
 
 export type Session = {
